@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:12
+    env_file:
+      - ./web/.env
+
+  redis:
+    image: redis:6
+
+  web:
+    build: ./web
+    command: python /code/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./web/:/code
+    ports:
+      - 8000:8000
+    env_file:
+      - ./web/.env
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: ./web
+    command: python /code/manage.py rqworker
+    volumes:
+      - ./web/:/code
+    env_file:
+      - ./web/.env
+    depends_on:
+      - db
+      - redis
